@@ -1,7 +1,7 @@
 package ed.inf.ttds.booksearch.messageserver.messageserver.lrucache;
 
 public class LinkedList<T> {
-    public int count;
+    private int count;
     public Node<T> head;
     public Node<T> tail;
 
@@ -57,5 +57,9 @@ public class LinkedList<T> {
 
         head.next = node;
         node.previous = head;
+    }
+
+    public int count() {
+        return this.count;
     }
 }

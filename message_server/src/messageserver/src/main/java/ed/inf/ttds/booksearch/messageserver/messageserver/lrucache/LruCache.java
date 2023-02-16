@@ -23,7 +23,7 @@ public class LruCache<K, V> {
         LruNode<K, V> n = new LruNode<K, V>(key, value);
         list.insertHead(n);
         map.put(key, list.head.next);
-        if (list.count > size) {
+        if (list.count() > size) {
             Node<LruNode<K, V>> dropped = list.dropTail();
             map.remove(dropped.value.key);
         }
