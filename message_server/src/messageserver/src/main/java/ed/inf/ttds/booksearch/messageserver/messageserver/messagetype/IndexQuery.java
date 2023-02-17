@@ -1,4 +1,4 @@
-package ed.inf.ttds.booksearch.messageserver.messageserver;
+package ed.inf.ttds.booksearch.messageserver.messageserver.messagetype;
 
 public class IndexQuery {
     public String query_type;

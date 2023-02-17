@@ -13,6 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import ed.inf.ttds.booksearch.messageserver.messageserver.lrucache.LruCache;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientColbert;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientDatabase;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientIndex;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ColbertResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.DatabaseResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.IndexResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebQuery;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebResult;
 
 @SpringBootApplication
 @RestController
