@@ -1,0 +1,3 @@
+[submodule "book_review_front_end"]
+	path = book_review_front_end
+	url = git@github.com:yucpu/book_review_front_end.git
