@@ -15,10 +15,10 @@ class ColBERTTest(BaseHTTPRequestHandler):
         print(data)
 
         # >>> your codes goes here, replace the random numbers with search results >>>
-        bookid_list_ranked_short = data['bookid_list_ranked_short']
-        bookid_list_ranked_short.reverse()
+        query = data['query']
+        k = int(data['k'])
 
-        response = {'bookid_list_reranked_short': bookid_list_ranked_short}
+        response = {'book_id'}
         # <<< @Xiaochen Zhang <<<
 
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')
