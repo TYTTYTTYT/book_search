@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ColbertResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ColbertResultK;
+
 
 @Service
 public class ClientColbert {
@@ -32,5 +34,24 @@ public class ClientColbert {
         } else {
             return null;
         }
+    }
+
+    public ColbertResultK search(String query, Long k) {
+        String url = "http://localhost:30003/colbert";
+        HashMap<String, Object> body = new HashMap<>();
+        body.put("query", query);
+        body.put("k", k);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body);
+
+        ResponseEntity<ColbertResultK> response = this.restTemplate.postForEntity(url, entity, ColbertResultK.class);
+
+        // check response status code
+        if (response.getStatusCode() == HttpStatus.CREATED) {
+            return response.getBody();
+        } else {
+            return null;
+        }
+        
     }
 }
