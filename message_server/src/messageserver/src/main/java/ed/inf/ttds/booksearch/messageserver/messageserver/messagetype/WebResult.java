@@ -9,6 +9,5 @@ public class WebResult {
 
     public WebResult(Long result_num) {
         result_list = new HashMap<>(result_num.intValue());
-        this.result_num = result_num;
     }
 }
