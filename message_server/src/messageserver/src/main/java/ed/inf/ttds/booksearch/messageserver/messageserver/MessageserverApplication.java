@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import ed.inf.ttds.booksearch.messageserver.messageserver.lrucache.LruCache;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientColbert;
@@ -25,6 +25,7 @@ import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.IndexResul
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebQuery;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebResult;
 
+@CrossOrigin
 @SpringBootApplication
 @RestController
 public class MessageserverApplication {
@@ -94,7 +95,7 @@ public class MessageserverApplication {
 
         for (Long bookid: bookid_list) {
             Long idx = idToIdx.get(bookid);
-            String bookInfo = dbResult.bookid_result_list.get(bookid);
+            Map<Object, Object> bookInfo = dbResult.bookid_result_list.get(bookid);
             webResult.result_list.put(idx, bookInfo);
         }
 
@@ -157,7 +158,7 @@ public class MessageserverApplication {
 
         for (Long bookid: bookid_list) {
             Long idx = idToIdx.get(bookid);
-            String bookInfo = dbResult.bookid_result_list.get(bookid);
+            Map<Object, Object> bookInfo = dbResult.bookid_result_list.get(bookid);
             webResult.result_list.put(idx, bookInfo);
         }
 
