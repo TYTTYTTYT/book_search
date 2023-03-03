@@ -18,7 +18,7 @@ class ColBERTTest(BaseHTTPRequestHandler):
         query = data['query']
         k = int(data['k'])
 
-        response = {'book_id'}
+        response = {'rank_info_books': list(range(1000000, 1010000))}
         # <<< @Xiaochen Zhang <<<
 
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')
