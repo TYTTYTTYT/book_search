@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd message_server/src/messageserver
+cd /home/tai_yintao101/book_search/message_server/src/messageserver
 mvn spring-boot:run
