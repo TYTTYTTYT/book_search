@@ -18,7 +18,6 @@ class DatabaseTest(BaseHTTPRequestHandler):
 
         body = self.rfile.read(content_length).decode('utf8')
         data = json.loads(body)
-        print(data)
 
         response = {"bookid_result_list": dict()}
         for bookid in data['bookid_list']:
@@ -33,7 +32,6 @@ class DatabaseTest(BaseHTTPRequestHandler):
 
             # <<< @Claudia Zhou <<<
 
-        print(response)
         jstring = dumps(response).encode('utf8')
         self.wfile.write(jstring)
 
