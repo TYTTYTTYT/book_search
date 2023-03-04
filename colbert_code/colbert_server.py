@@ -1,6 +1,7 @@
 import os
 import sys
 from tqdm import tqdm
+import time
 sys.path.insert(0, '../')
 
 from colbert.infra import Run, RunConfig, ColBERTConfig
@@ -44,6 +45,7 @@ import json
 class ColBERTTest(BaseHTTPRequestHandler):
 
     def do_POST(self):
+        tic = time.time()
         self.send_response(201)
         self.send_header('Content-type', 'application/json; charset=utf-8')
         self.end_headers()
@@ -69,6 +71,7 @@ class ColBERTTest(BaseHTTPRequestHandler):
 
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')
         self.wfile.write(jstring)
+        print('Elapsed: %s' % (time.time() - tic))
 
 
 if __name__ == "__main__":

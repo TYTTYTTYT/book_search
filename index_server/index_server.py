@@ -4,6 +4,7 @@ import numpy as np
 from nltk.stem import PorterStemmer
 from tqdm import tqdm
 import pickle
+import time
 
 stemmer = PorterStemmer()
 
@@ -145,6 +146,7 @@ import json
 class IndexTest(BaseHTTPRequestHandler):
 
     def do_POST(self):
+        tic = time.time()
         self.send_response(201)
         self.send_header('Content-type', 'application/json; charset=utf-8')
         self.end_headers()
@@ -173,6 +175,7 @@ class IndexTest(BaseHTTPRequestHandler):
 
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')
         self.wfile.write(jstring)
+        print('Elapsed: %s' % (time.time() - tic))
 
 
 if __name__ == "__main__":

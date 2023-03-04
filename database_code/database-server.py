@@ -3,6 +3,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 import pymongo
 from bson.json_util import dumps
+import time
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["TTDS"]
@@ -11,6 +12,7 @@ mycol = mydb["Bookreview"]
 class DatabaseTest(BaseHTTPRequestHandler):
 
     def do_POST(self):
+        tic = time.time()
         self.send_response(201)
         self.send_header('Content-type', 'application/json; charset=utf-8')
         self.end_headers()
@@ -34,6 +36,7 @@ class DatabaseTest(BaseHTTPRequestHandler):
 
         jstring = dumps(response).encode('utf8')
         self.wfile.write(jstring)
+        print('Elapsed: %s' % (time.time() - tic))
 
 
 if __name__ == "__main__":
