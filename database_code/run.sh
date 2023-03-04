@@ -15,4 +15,4 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 conda activate ttds
-python database_code database-server.py
+python database_code/database-server.py
