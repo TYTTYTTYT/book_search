@@ -37,5 +37,6 @@ class DatabaseTest(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    print('Server start.')
     httpd = HTTPServer(('localhost', 30001), DatabaseTest)
     httpd.serve_forever()
