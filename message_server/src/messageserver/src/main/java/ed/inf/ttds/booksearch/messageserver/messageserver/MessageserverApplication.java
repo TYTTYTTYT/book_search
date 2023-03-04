@@ -128,9 +128,6 @@ public class MessageserverApplication {
         if (bookids == null) {
             System.out.println("Cache miss");
             // invoke the index search service
-            IndexResult indexResult = idxClient.search(query_type, query);
-            int index_result_num = indexResult.bookid_list_ranked_long.size();
-            System.out.println(index_result_num);
 
             // if free search, rerank using colBERT service
             // if (query.query_type == "free") {
@@ -139,27 +136,14 @@ public class MessageserverApplication {
             //     Collections.copy(bertResult.bookid_list_reranked_short, indexResult.bookid_list_ranked_long);
             // }
             if (query_type.equals("phrase")) {
-                System.out.println("new phrase search");
-                System.out.flush();
-                Long k = (long) Math.max(1000, index_result_num);
-                if (k > 10000l) {
-                    k = 10000l;
-                }
-                System.out.println(k);
-                ColbertResultK bertResult = bertClient.search(query, k);
-                int bert_result_num = bertResult.rank_info_books.size();
-                if (index_result_num >= bert_result_num) {
-                    System.out.println("index num is >= bert num");
-                    System.out.println(index_result_num);
-                    System.out.println(bert_result_num);
-                    Collections.copy(indexResult.bookid_list_ranked_long, bertResult.rank_info_books);
-                    System.out.println("result copied");
-                } else {
-                    indexResult.bookid_list_ranked_long = bertResult.rank_info_books;
-                }
-            }
-            bookids = indexResult.bookid_list_ranked_long;
 
+                Long k = 10000l;
+                ColbertResultK bertResult = bertClient.search(query, k);
+                bookids = bertResult.rank_info_books;
+            } else {
+                IndexResult indexResult = idxClient.search(query_type, query);
+                bookids = indexResult.bookid_list_ranked_long;
+            }
             cache.insert(sid, bookids);
         } else {
             System.out.println("Cache hit");
