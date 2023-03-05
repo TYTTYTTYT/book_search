@@ -1,0 +1,80 @@
+[INFO] Scanning for projects...
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-install-plugin/3.1.0/maven-install-plugin-3.1.0.pom
+Progress (1): 1.4/7.8 kBProgress (1): 2.7/7.8 kBProgress (1): 4.1/7.8 kBProgress (1): 5.5/7.8 kBProgress (1): 6.9/7.8 kBProgress (1): 7.8 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-install-plugin/3.1.0/maven-install-plugin-3.1.0.pom (7.8 kB at 42 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-install-plugin/3.1.0/maven-install-plugin-3.1.0.jar
+Progress (1): 1.4/30 kBProgress (1): 2.7/30 kBProgress (1): 4.1/30 kBProgress (1): 5.5/30 kBProgress (1): 6.9/30 kBProgress (1): 8.2/30 kBProgress (1): 9.6/30 kBProgress (1): 11/30 kB Progress (1): 12/30 kBProgress (1): 14/30 kBProgress (1): 15/30 kBProgress (1): 16/30 kBProgress (1): 17/30 kBProgress (1): 19/30 kBProgress (1): 20/30 kBProgress (1): 21/30 kBProgress (1): 23/30 kBProgress (1): 24/30 kBProgress (1): 25/30 kBProgress (1): 27/30 kBProgress (1): 28/30 kBProgress (1): 30/30 kBProgress (1): 30 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-install-plugin/3.1.0/maven-install-plugin-3.1.0.jar (30 kB at 1.0 MB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-antrun-plugin/1.3/maven-antrun-plugin-1.3.pom
+Progress (1): 1.4/4.7 kBProgress (1): 2.7/4.7 kBProgress (1): 4.1/4.7 kBProgress (1): 4.7 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-antrun-plugin/1.3/maven-antrun-plugin-1.3.pom (4.7 kB at 249 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/12/maven-plugins-12.pom
+Progress (1): 1.4/12 kBProgress (1): 2.7/12 kBProgress (1): 4.1/12 kBProgress (1): 5.5/12 kBProgress (1): 6.9/12 kBProgress (1): 8.2/12 kBProgress (1): 9.6/12 kBProgress (1): 11/12 kB Progress (1): 12 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/12/maven-plugins-12.pom (12 kB at 618 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/9/maven-parent-9.pom
+Progress (1): 16/33 kBProgress (1): 33/33 kBProgress (1): 33 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/9/maven-parent-9.pom (33 kB at 1.6 MB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/apache/4/apache-4.pom
+Progress (1): 4.5 kB                    Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/apache/4/apache-4.pom (4.5 kB at 300 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-antrun-plugin/1.3/maven-antrun-plugin-1.3.jar
+Progress (1): 16/24 kBProgress (1): 24 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-antrun-plugin/1.3/maven-antrun-plugin-1.3.jar (24 kB at 1.4 MB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-assembly-plugin/2.2-beta-5/maven-assembly-plugin-2.2-beta-5.pom
+Progress (1): 15 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-assembly-plugin/2.2-beta-5/maven-assembly-plugin-2.2-beta-5.pom (15 kB at 842 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/16/maven-plugins-16.pom
+Progress (1): 13 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/16/maven-plugins-16.pom (13 kB at 809 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-assembly-plugin/2.2-beta-5/maven-assembly-plugin-2.2-beta-5.jar
+Progress (1): 16/209 kBProgress (1): 32/209 kBProgress (1): 49/209 kBProgress (1): 65/209 kBProgress (1): 81/209 kBProgress (1): 98/209 kBProgress (1): 114/209 kBProgress (1): 131/209 kBProgress (1): 147/209 kBProgress (1): 163/209 kBProgress (1): 180/209 kBProgress (1): 196/209 kBProgress (1): 209 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-assembly-plugin/2.2-beta-5/maven-assembly-plugin-2.2-beta-5.jar (209 kB at 5.6 MB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-dependency-plugin/2.8/maven-dependency-plugin-2.8.pom
+Progress (1): 11 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-dependency-plugin/2.8/maven-dependency-plugin-2.8.pom (11 kB at 716 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/24/maven-plugins-24.pom
+Progress (1): 11 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-plugins/24/maven-plugins-24.pom (11 kB at 720 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-dependency-plugin/2.8/maven-dependency-plugin-2.8.jar
+Progress (1): 16/153 kBProgress (1): 33/153 kBProgress (1): 49/153 kBProgress (1): 66/153 kBProgress (1): 82/153 kBProgress (1): 98/153 kBProgress (1): 115/153 kBProgress (1): 131/153 kBProgress (1): 147/153 kBProgress (1): 153 kB                        Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-dependency-plugin/2.8/maven-dependency-plugin-2.8.jar (153 kB at 6.7 MB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
+Progress (1): 16/21 kBProgress (1): 21 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 1.1 MB/s)
+Progress (1): 1.4/14 kBProgress (1): 2.7/14 kBProgress (1): 4.1/14 kBProgress (1): 5.5/14 kBProgress (1): 6.9/14 kBProgress (1): 8.2/14 kBProgress (1): 9.6/14 kBProgress (1): 11/14 kB Progress (1): 12/14 kBProgress (1): 14/14 kBProgress (1): 14 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 259 kB/s)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.765 s
+[INFO] Finished at: 2023-03-05T00:01:29Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] No plugin found for prefix 'spring-boot' in the current project and in the plugin groups [org.apache.maven.plugins, org.codehaus.mojo] available from the repositories [local (/home/tai/.m2/repository), central (https://repo.maven.apache.org/maven2)] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/NoPluginFoundForPrefixException
+[INFO] Scanning for projects...
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
+Progress (1): 1.4/14 kBProgress (1): 2.7/14 kBProgress (1): 4.1/14 kBProgress (1): 5.5/14 kBProgress (1): 6.9/14 kBProgress (1): 8.2/14 kBProgress (2): 8.2/14 kB | 1.4/21 kBProgress (2): 9.6/14 kB | 1.4/21 kBProgress (2): 11/14 kB | 1.4/21 kB Progress (2): 11/14 kB | 2.7/21 kBProgress (2): 12/14 kB | 2.7/21 kBProgress (2): 14/14 kB | 2.7/21 kBProgress (2): 14/14 kB | 4.1/21 kBProgress (2): 14 kB | 4.1/21 kB   Progress (2): 14 kB | 5.5/21 kBProgress (2): 14 kB | 6.9/21 kBProgress (2): 14 kB | 8.2/21 kB                               Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 74 kB/s)
+Progress (1): 9.6/21 kBProgress (1): 11/21 kB Progress (1): 12/21 kBProgress (1): 14/21 kBProgress (1): 15/21 kBProgress (1): 16/21 kBProgress (1): 17/21 kBProgress (1): 19/21 kBProgress (1): 20/21 kBProgress (1): 21 kB                      Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 103 kB/s)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.501 s
+[INFO] Finished at: 2023-03-05T00:02:19Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] No plugin found for prefix 'spring-boot' in the current project and in the plugin groups [org.apache.maven.plugins, org.codehaus.mojo] available from the repositories [local (/home/tai/.m2/repository), central (https://repo.maven.apache.org/maven2)] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/NoPluginFoundForPrefixException
+[INFO] Scanning for projects...
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
+Progress (1): 1.4/21 kBProgress (2): 1.4/21 kB | 1.4/14 kBProgress (2): 2.7/21 kB | 1.4/14 kBProgress (2): 4.1/21 kB | 1.4/14 kBProgress (2): 4.1/21 kB | 2.7/14 kBProgress (2): 5.5/21 kB | 2.7/14 kBProgress (2): 5.5/21 kB | 4.1/14 kBProgress (2): 6.9/21 kB | 4.1/14 kBProgress (2): 6.9/21 kB | 5.5/14 kBProgress (2): 8.2/21 kB | 5.5/14 kBProgress (2): 9.6/21 kB | 5.5/14 kBProgress (2): 9.6/21 kB | 6.9/14 kBProgress (2): 11/21 kB | 6.9/14 kB Progress (2): 11/21 kB | 8.2/14 kBProgress (2): 12/21 kB | 8.2/14 kBProgress (2): 12/21 kB | 9.6/14 kBProgress (2): 14/21 kB | 9.6/14 kBProgress (2): 14/21 kB | 11/14 kB Progress (2): 15/21 kB | 11/14 kBProgress (2): 16/21 kB | 11/14 kBProgress (2): 16/21 kB | 12/14 kBProgress (2): 17/21 kB | 12/14 kBProgress (2): 17/21 kB | 14/14 kBProgress (2): 19/21 kB | 14/14 kBProgress (2): 19/21 kB | 14 kB   Progress (2): 20/21 kB | 14 kBProgress (2): 21 kB | 14 kB                              Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 103 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 71 kB/s)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.474 s
+[INFO] Finished at: 2023-03-05T00:04:18Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] No plugin found for prefix 'spring-boot' in the current project and in the plugin groups [org.apache.maven.plugins, org.codehaus.mojo] available from the repositories [local (/home/tai/.m2/repository), central (https://repo.maven.apache.org/maven2)] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/NoPluginFoundForPrefixException
