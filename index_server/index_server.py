@@ -30,12 +30,16 @@ import xml.etree.ElementTree as ET
 from math import log
 import logging
 import time
+from collections import deque
+import heapq
+import json
+from pathlib import Path
 
 from nltk.stem.porter import PorterStemmer
 from tqdm import tqdm
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import json
+from cache_dict.cache_dict import CacheDict
 
 # Tokenizer pattern
 TOKENIZE_PATTERN = r"(?:[a-zA-Z]+)|(?:[a-zA-Z]+'[a-zA-Z]+)|(?:[0-9]+(?:[./,][0-9]+)*)"
@@ -112,43 +116,48 @@ def preprocess(sent: str, index: Optional[Any]=None) -> list[str]:
     return tokens
 
 class Index(object):
-    def __init__(self, path: os.PathLike | str) -> None:
+    def __init__(self, path: os.PathLike | str, save_path: os.PathLike | str=None) -> None:
         super().__init__()
-        self.__index = dict()
+        self.__index = None
         self.num_docs = 0
         self.__vocab = set()
+        self.save_path = save_path
 
-        match str(path)[-4:]:
-            case '.bin':
-                self.load_index(path)
-            case 'json':
-                self.build_index(path)
+        if os.path.isdir(path):
+            index_path = os.path.join(path, 'index')
+            self.__index = CacheDict(1000, index_path)
+            self.load_index(path)
+        else:
+            index_path = os.path.join(save_path, 'index')
+            self.__index = CacheDict(1000, index_path)
+            self.build_index(path)
 
-    def save_index(self, path: os.PathLike | str) -> None:
+    def save_index(self) -> None:
         # save the index to a new folder
-        os.makedirs(path, exist_ok=True)
-
-        # save the text index
-        with open(os.path.join(path, 'index.txt'), 'w') as fout:
-            fout.write(str(self))
+        os.makedirs(self.save_path, exist_ok=True)
         
         # save the binary index
-        with open(os.path.join(path, 'index.bin'), 'wb') as fout:
+        meta_path = os.path.join(self.save_path, 'meta.bin')
+        with open(meta_path, 'wb') as fout:
             global stopwords
-            pickle.dump((self.num_docs, self.__index, stopwords, vocab), fout)
+            pickle.dump((self.num_docs, stopwords, vocab), fout)
+        self.__index.save()
 
     def load_index(self, path: os.PathLike | str) -> None:
         # load the binary index
-        with open(path, 'rb') as fin:
+        meta_path = os.path.join(path, 'meta.bin')
+        with open(meta_path, 'rb') as fin:
             global stopwords
             global vocab
-            self.num_docs, self.__index, stopwords, vocab = pickle.load(fin)
+            self.num_docs, stopwords, vocab = pickle.load(fin)
+        self.__index.load()
 
     def build_index(self, path: os.PathLike | str) -> None:
         # build the index as a dict
         with open(path, 'r') as fin:
             docs = fin.readlines()
         term_pos = []
+        heapq.heapify(term_pos)
         logging.info('Preprocessing the corpus...')
         for doc in tqdm(docs):
             doc = json.loads(doc)
@@ -161,23 +170,23 @@ class Index(object):
             tokens = preprocess(sent)
             # Add all tokens and corresponding docid and position to a list
             for pos, token in enumerate(tokens):
-                term_pos += [(token, docid, pos)]
+                heapq.heappush(term_pos, (docid, pos, token))
         
-        # sort the list
-        term_pos.sort(key=lambda x: (x[1], x[2]))
+        logging.info(f'{len(term_pos)} tokens in total')
 
         # Build the docid lists and position lists for each token with order
         # Create the token represents the unknown token
-        self.__index[UNKNOWN] = {'docid': [], 'pos': dict()}
-        for (token, docid, pos) in tqdm(term_pos):
+        self.__index[UNKNOWN] = (deque(), dict())
+        for _ in tqdm(range(len(term_pos))):
+            (docid, pos, token) = heapq.heappop(term_pos)
             if token not in self.__index:
                 self.__vocab.add(token)
-                self.__index[token] = {'docid': [], 'pos': dict()}
-            if len(self.__index[token]['docid']) == 0 or self.__index[token]['docid'][-1] != docid:
-                self.__index[token]['docid'] += [docid]
-            if docid not in self.__index[token]['pos']:
-                self.__index[token]['pos'][docid] = []
-            self.__index[token]['pos'][docid] += [pos]
+                self.__index[token] = (deque(), dict())
+            if len(self.__index[token][0]) == 0 or self.__index[token][0][-1] != docid:
+                self.__index[token][0].append(docid)
+            if docid not in self.__index[token][1]:
+                self.__index[token][1][docid] = deque()
+            self.__index[token][1][docid].append([pos])
             
         global vocab
         vocab = self.__vocab
@@ -186,18 +195,18 @@ class Index(object):
         # find a token's docid list
         if token not in self.__index:
             return []
-        return self.__index[token]['docid']
+        return self.__index[token][0]
 
     def get_pos(self, token: str, docid: int) -> list[int]:
         # find a token's position list w.r.t. a docid
-        return self.__index[token]['pos'][docid]
+        return self.__index[token][1][docid]
 
     def __str__(self) -> str:
         # format the index into a string line by line
         output = ''
         for token, index in self.__index.items():
-            output += token + ':' + str(len(index['docid'])) + '\n'
-            for docid, pos in index['pos'].items():
+            output += token + ':' + str(len(index[0])) + '\n'
+            for docid, pos in index[1].items():
                 pos = map(str, pos)
                 output += '\t' + str(docid) + ': ' + ', '.join(pos) + '\n'
         
@@ -242,10 +251,10 @@ class Index(object):
     def tfidf_weight(self, token: str, docid: int) -> float:
         # calculate the TFIDF of a token to a document
         index = self.__index[token]
-        if docid not in index['pos']:
+        if docid not in index[1]:
             return 0.0
-        df = len(index['docid'])
-        tf = len(index['pos'][docid])
+        df = len(index[0])
+        tf = len(index[1][docid])
         weight = (1 + log(tf, 10)) * log(self.num_docs / df, 10)
         return weight
 
@@ -539,9 +548,9 @@ if __name__ == "__main__":
         
         # Build and save the index
         logging.info('Begin to build the index...')
-        index = Index(args.datapath)
+        index = Index(args.datapath, args.indexpath)
         logging.info('The index is built successfully.')
-        index.save_index(args.indexpath)
+        index.save_index()
         logging.info(f'The index is saved to {args.indexpath}.')
 
     # If the search command is specified
