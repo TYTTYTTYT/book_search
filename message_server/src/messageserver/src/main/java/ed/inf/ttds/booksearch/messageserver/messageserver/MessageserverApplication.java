@@ -9,6 +9,8 @@ import java.lang.Math;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +26,8 @@ import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ColbertRes
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.IndexResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebQuery;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ReviewPost;
+
 
 @CrossOrigin
 @SpringBootApplication
@@ -193,35 +197,12 @@ public class MessageserverApplication {
                     )
                 );
         }
-
         return response;
+    }
         
-        // Long num = result_range_to - result_range_from + 1;
-        // int num_books = num.intValue();
-        // List<Long> bookid_list = new ArrayList<>(num_books);
-
-        // // create a map from bookid to index
-        // Map<Long, Long> idToIdx = new HashMap<>(num_books * 2);
-        // int shift = result_range_from.intValue();
-        
-        // for (Long idx = result_range_from; idx <= result_range_to; idx++) {
-        //     Long id = bookids.get(idx.intValue());
-        //     bookid_list.add(idx.intValue() - shift, id);
-        //     idToIdx.put(id, idx);
-        // }
-
-        // // get book information from the database, using the bookid as keys
-        // DatabaseResult dbResult = dbClient.getDocs(bookid_list);
-
-        // // convert bookid to indexes
-        // WebResult webResult = new WebResult((long)bookids.size());
-
-        // for (Long bookid: bookid_list) {
-        //     Long idx = idToIdx.get(bookid);
-        //     Map<Object, Object> bookInfo = dbResult.bookid_result_list.get(bookid);
-        //     webResult.result_list.put(idx, bookInfo);
-        // }
-
-      	// return webResult;
+    @PostMapping("/review")
+    public ReviewPost review(@RequestBody ReviewPost review) {
+        ReviewPost dbresponse = dbClient.insertReview(review);
+        return dbresponse;
     }
 }

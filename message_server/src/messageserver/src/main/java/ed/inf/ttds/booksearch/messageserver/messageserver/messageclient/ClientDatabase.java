@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.DatabaseResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ReviewPost;
+
 
 @Service
 public class ClientDatabase {
@@ -25,6 +27,21 @@ public class ClientDatabase {
         HttpEntity<Map<String, List<Long>>> entity = new HttpEntity<>(body);
 
         ResponseEntity<DatabaseResult> response = this.restTemplate.postForEntity(url, entity, DatabaseResult.class);
+
+        // check response status code
+        if (response.getStatusCode() == HttpStatus.CREATED) {
+            return response.getBody();
+        } else {
+            return null;
+        }
+    }
+
+    public ReviewPost insertReview(ReviewPost review) {
+        String url = "http://localhost:30001/database";
+
+        HttpEntity<ReviewPost> entity = new HttpEntity<>(review);
+
+        ResponseEntity<ReviewPost> response = this.restTemplate.postForEntity(url, entity, ReviewPost.class);
 
         // check response status code
         if (response.getStatusCode() == HttpStatus.CREATED) {
