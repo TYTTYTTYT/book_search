@@ -6,6 +6,7 @@ import json
 import csv
 import os
 import sys
+import shutil
 
 # ColBERT root path
 sys.path.insert(0, '/home/adqaicp/documents/ColBERT')
@@ -76,7 +77,7 @@ def jsontotsv(inputfile):
 
 def indexer(checkpointp, index_name, collection, outputpath):
     experiment = 'liveindex'
-    index_folder = 'experiments/' + experiment + '/indexes/'
+    index_folder = os.path.join('experiments', experiment, 'indexes')
     nbits = 2   # encode each dimension with 2 bits
     doc_maxlen = 300   # truncate passages at 300 tokens
     collection = os.path.join(collection)
@@ -92,14 +93,19 @@ def indexer(checkpointp, index_name, collection, outputpath):
         indexer.index(name=index_name, collection=collection, overwrite=True)
     
     # delete exist index
-    if os.path.exists(outputpath + "/" + index_name):
-        os.system("rm -rf " + outputpath + "/" + index_name)
+    index_path = os.path.join(outputpath, index_name)
+    if os.path.exists(index_path):
+        shutil.rmtree(index_path)
+        print("Delete exist index: " + index_path)
+        
     # move the index to the output path
-    os.system("mv " + index_folder + index_name + " " + outputpath)
+    outputindex = os.path.join(index_folder, index_name)
+    os.system("mv " + outputindex + " " + outputpath)
     # print index path
-    print("Index path: " + outputpath + "/" + index_name)
-    # remove experiment folder
-    os.system("rm -rf experiments/")
+    print("Index path: " + index_path)
+    # remove the index folder
+    shutil.rmtree(index_folder)
+    print("Remove index folder: " + index_folder)
 
 if __name__ == "__main__":
     inputfile, outputpath = getvalue(sys.argv[1:])
