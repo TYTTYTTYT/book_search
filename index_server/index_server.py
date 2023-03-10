@@ -34,12 +34,14 @@ from collections import deque
 import heapq
 import json
 from pathlib import Path
+from multiprocessing import Pool
 
 from nltk.stem.porter import PorterStemmer
 from tqdm import tqdm
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from cache_dict.cache_dict import CacheDict
+from transformers import GPT2Tokenizer
 
 # Tokenizer pattern
 TOKENIZE_PATTERN = r"(?:[a-zA-Z]+)|(?:[a-zA-Z]+'[a-zA-Z]+)|(?:[0-9]+(?:[./,][0-9]+)*)"
@@ -59,6 +61,8 @@ RSB_PATTERN = '([0-9]+) (.*)'
 
 logging.basicConfig(filename='index_server.log', encoding='utf-8', level=logging.INFO)
 
+encoder = GPT2Tokenizer.from_pretrained('gpt2')
+encoder.max_model_input_sizes['gpt2'] = 1000000
 parser = argparse.ArgumentParser(description="Build index or search")
 
 # Build index arguments
@@ -66,6 +70,7 @@ parser.add_argument('--build', action='store_true', help='Build index')
 parser.add_argument('--datapath', type=str, help='json document path')
 parser.add_argument('--stoppath', type=str, help='Stopping word path')
 parser.add_argument('--indexpath', type=str, help='Index path')
+parser.add_argument('--num_workers', type=int, help='Number of workers')
 
 # Search arguments
 parser.add_argument('--search', action='store_true', help='Perform a search')
@@ -108,29 +113,46 @@ def stem(tokens: list[str]) -> list[str]:
         tokens = list(map(lambda x: x if x in vocab else UNKNOWN, tokens))
     return tokens
 
-def preprocess(sent: str, index: Optional[Any]=None) -> list[str]:
+def preprocess(sent: str, index: Optional[Any]=None) -> list[int]:
     # Combine the tokenization, stopping and stem.
     tokens = tokenize(sent)
     tokens = stopping(tokens)
     tokens = stem(tokens)
-    return tokens
+    tokens = ' '.join(tokens)
+    tokens = encoder.encode(tokens)
+    return tokens[:100]
+
+def preprocess_doc(doc: str) -> tuple[int, list[str]]:
+    doc = json.loads(doc)
+    docid = int(doc['book_id'])
+    title = doc['title']
+    description = doc['description']
+    author_list = doc['author_list']
+    sent = ' '.join([title, description] + author_list)
+    tokens = preprocess(sent)
+    return docid, tokens
 
 class Index(object):
-    def __init__(self, path: os.PathLike | str, save_path: os.PathLike | str=None) -> None:
+    def __init__(
+        self, 
+        path: os.PathLike | str, 
+        save_path: os.PathLike | str=None,
+        num_workers: int=4,
+        cache_size: int=1000
+        ) -> None:
         super().__init__()
         self.__index = None
         self.num_docs = 0
         self.__vocab = set()
         self.save_path = save_path
+        self.num_workers = num_workers
+        self.__index = None
+        self.cache_size = cache_size
 
         if os.path.isdir(path):
-            index_path = os.path.join(path, 'index')
-            self.__index = CacheDict(1000, index_path)
-            self.load_index(path)
+            self.load_index()
         else:
-            index_path = os.path.join(save_path, 'index')
-            self.__index = CacheDict(1000, index_path)
-            self.build_index(path)
+            self.build_index()
 
     def save_index(self) -> None:
         # save the index to a new folder
@@ -143,39 +165,41 @@ class Index(object):
             pickle.dump((self.num_docs, stopwords, vocab), fout)
         self.__index.save()
 
-    def load_index(self, path: os.PathLike | str) -> None:
+    def load_index(self) -> None:
         # load the binary index
-        meta_path = os.path.join(path, 'meta.bin')
+        meta_path = os.path.join(self.path, 'meta.bin')
         with open(meta_path, 'rb') as fin:
             global stopwords
             global vocab
             self.num_docs, stopwords, vocab = pickle.load(fin)
+        index_path = os.path.join(self.path, 'index')
+        self.__index = CacheDict(self.cache_size, index_path)
         self.__index.load()
 
-    def build_index(self, path: os.PathLike | str) -> None:
+    def build_index(self) -> None:
         # build the index as a dict
-        with open(path, 'r') as fin:
+        with open(self.path, 'r') as fin:
             docs = fin.readlines()
+        self.num_docs = len(docs)
         term_pos = []
         heapq.heapify(term_pos)
+        
         logging.info('Preprocessing the corpus...')
-        for doc in tqdm(docs):
-            doc = json.loads(doc)
-            self.num_docs += 1
-            docid = int(doc['book_id'])
-            title = doc['title']
-            description = doc['description']
-            author_list = doc['author_list']
-            sent = ' '.join([title, description] + author_list)
-            tokens = preprocess(sent)
+        with Pool(self.num_workers) as p:
+            docs = p.map(preprocess_doc, docs)
+        
+        logging.info('Sorting the corpus...')
+        for _ in tqdm(range(len(docs))):
+            docid, tokens = docs.pop()
             # Add all tokens and corresponding docid and position to a list
             for pos, token in enumerate(tokens):
                 heapq.heappush(term_pos, (docid, pos, token))
-        
+        del docs
         logging.info(f'{len(term_pos)} tokens in total')
 
         # Build the docid lists and position lists for each token with order
         # Create the token represents the unknown token
+        self.__index = dict()
         self.__index[UNKNOWN] = (deque(), dict())
         for _ in tqdm(range(len(term_pos))):
             (docid, pos, token) = heapq.heappop(term_pos)
@@ -190,6 +214,10 @@ class Index(object):
             
         global vocab
         vocab = self.__vocab
+        
+        # transfer the index into a cached index
+        index_path = os.path.join(self.save_path, 'index')
+        self.__index = CacheDict(self.cache_size, index_path, self.__index)
 
     def get_docid(self, token: str) -> list[int]:
         # find a token's docid list
@@ -548,7 +576,7 @@ if __name__ == "__main__":
         
         # Build and save the index
         logging.info('Begin to build the index...')
-        index = Index(args.datapath, args.indexpath)
+        index = Index(args.datapath, args.indexpath, args.num_workers)
         logging.info('The index is built successfully.')
         index.save_index()
         logging.info(f'The index is saved to {args.indexpath}.')

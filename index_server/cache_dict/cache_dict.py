@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from pathlib import Path
 import os
 import pickle
@@ -14,7 +14,7 @@ class Node(object):
         self.next = None
         self.prev = None
         self.in_memory = True
-        self.path = os.path.join(cache_path, str(id))
+        self.path = os.path.join(cache_path, str(hash(id)))
         
     def offLoad(self) -> None:
         with open(self.path, 'wb') as fout:
@@ -29,7 +29,7 @@ class Node(object):
         self.in_memory = True
 
 class CacheDict(object):
-    def __init__(self, capacity: int=1000, cache_path: str=DATAPATH) -> None:
+    def __init__(self, capacity: int=1000, cache_path: str=DATAPATH, data: Optional[dict]=None) -> None:
         self.cache_path = cache_path
         self.node_path = os.path.join(cache_path, 'nodes')
         os.makedirs(self.node_path, exist_ok=True)
@@ -40,6 +40,9 @@ class CacheDict(object):
         self.count = 0
         self.id2node = dict()
         self.capacity = capacity
+        if data:
+            for k, v in data.items():
+                self.__setitem__(k, v)
     
     def __setitem__(self, id: Any, value: Any) -> None:
         if id in self.id2node:
@@ -115,9 +118,9 @@ if __name__ == '__main__':
     from tqdm import tqdm
     print('inserting the data')
     d = CacheDict(10000, 'data/test')
-    for i in tqdm(range(30000)):
+    for i in tqdm(range(50000)):
         d[i] = str(i)
-    ids = list(range(30000))
+    ids = list(range(50000))
     ids.reverse()
     print('testing the data')
     for i in tqdm(ids):
@@ -127,11 +130,23 @@ if __name__ == '__main__':
     dd = CacheDict(10000, 'data/test')
     dd.load()
     print('testing the recorvered data')
-    for i in tqdm(ids):
+    for i in tqdm(ids[:10000]):
         assert dd[i] == str(i), f'd:{dd[i]}, {i}'
         
     print('this run should be faster with cached data')
-    ids.reverse()
-    for i in tqdm(ids):
+    for i in tqdm(ids[:10000]):
         assert dd[i] == str(i), f'd:{dd[i]}, {i}'
+        
+    print('test load dict')
+    d = dict()
+    for k in range(50000):
+        d[k] = k + 50000
+    
+    cd = CacheDict(10000, 'data/test', d)
+    for k in tqdm(range(40000, 50000)):
+        assert cd[k] == k + 50000
+        
+    for k in tqdm(range(0, 10000)):
+        assert cd[k] == k + 50000
+    
     
