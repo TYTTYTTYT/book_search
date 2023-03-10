@@ -3,7 +3,11 @@ from pathlib import Path
 import os
 import pickle
 from collections import deque
+import logging
 
+FORMAT = '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
+logger = logging.getLogger(__name__)
 
 DATAPATH = os.path.join(Path.home(), '.cache', 'cache_dict')
 
@@ -14,7 +18,11 @@ class Node(object):
         self.next = None
         self.prev = None
         self.in_memory = True
-        self.path = os.path.join(cache_path, str(hash(id)))
+        file_name = hash(id)
+        folder_name = os.path.join(cache_path, str(file_name % 16384))
+        file_name = str(file_name)
+        os.makedirs(folder_name, exist_ok=True)
+        self.path = os.path.join(folder_name, file_name)
         
     def offLoad(self) -> None:
         with open(self.path, 'wb') as fout:
@@ -41,11 +49,13 @@ class CacheDict(object):
         self.id2node = dict()
         self.capacity = capacity
         if data:
+            logger.info(f'Loading data from dict with {len(data)} keys...')
             keys = list(data.keys())
-            for k in keys:
+            for k in tqdm(keys):
                 v = data.pop(k)
                 self.__setitem__(k, v)
             del data
+            logger.info('Done.')
     
     def __setitem__(self, id: Any, value: Any) -> None:
         if id in self.id2node:
@@ -98,6 +108,7 @@ class CacheDict(object):
         return id in self.id2node
     
     def save(self) -> None:
+        logger.info(f'Saving the cache with {self.count} keys in memory...')
         in_cache_ids = deque()
         current_node = self.head.next
         while current_node.id != 'tail':
@@ -105,42 +116,45 @@ class CacheDict(object):
             current_node = current_node.next
         while self.count > 0:
             self.__pop()
-        
 
         with open(os.path.join(self.cache_path, 'meta.db'), 'wb') as fout:
             pickle.dump((self.id2node, in_cache_ids, self.capacity), fout)
+        logger.info('Done.')
     
     def load(self) -> None:
+        logger.info(f'Loading the data from disk...')
         with open(os.path.join(self.cache_path, 'meta.db'), 'rb') as fin:
             self.id2node, in_cache_ids, self.capacity = pickle.load(fin)
         in_cache_ids.reverse()
         for id in in_cache_ids:
             self.__getitem__(id)
+        logger.info('Done.')
+        logger.info(f'{len(self.id2node)} keys in total, {self.count} keys are saved in memory.')
 
 if __name__ == '__main__':
     from tqdm import tqdm
-    print('inserting the data')
+    logger.warning('inserting the data')
     d = CacheDict(10000, 'data/test')
     for i in tqdm(range(50000)):
         d[i] = str(i)
     ids = list(range(50000))
     ids.reverse()
-    print('testing the data')
+    logger.warning('testing the data')
     for i in tqdm(ids):
         assert d[i] == str(i), f'd:{d[i]}, {i}'
         
     d.save()
     dd = CacheDict(10000, 'data/test')
     dd.load()
-    print('testing the recorvered data')
+    logger.warning('testing the recorvered data')
     for i in tqdm(ids[:10000]):
         assert dd[i] == str(i), f'd:{dd[i]}, {i}'
         
-    print('this run should be faster with cached data')
+    logger.warning('this run should be faster with cached data')
     for i in tqdm(ids[:10000]):
         assert dd[i] == str(i), f'd:{dd[i]}, {i}'
         
-    print('test load dict')
+    logger.warning('test load dict')
     d = dict()
     for k in range(50000):
         d[k] = k + 50000

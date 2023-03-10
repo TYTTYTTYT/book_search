@@ -59,7 +59,9 @@ UNKNOWN = "<unknown>"
 BSB_PATTERN = "([0-9]+) (.*)"
 RSB_PATTERN = '([0-9]+) (.*)'
 
-logging.basicConfig(filename='index_server.log', encoding='utf-8', level=logging.INFO)
+FORMAT = '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
+logger = logging.getLogger(__name__)
 
 # encoder = GPT2Tokenizer.from_pretrained('gpt2')
 # encoder.max_model_input_sizes['gpt2'] = 1000000
@@ -113,12 +115,11 @@ def stem(tokens: list[str]) -> list[str]:
         tokens = list(map(lambda x: x if x in vocab else UNKNOWN, tokens))
     return tokens
 
-def preprocess(sent: str) -> list[int]:
+def preprocess(sent: str) -> list[str]:
     # Combine the tokenization, stopping and stem.
     tokens = tokenize(sent)
     tokens = stopping(tokens)
     tokens = stem(tokens)
-    tokens = ' '.join(tokens)
     # tokens = encoder.encode(tokens)
     return tokens
 
@@ -184,18 +185,24 @@ class Index(object):
         term_pos = []
         heapq.heapify(term_pos)
         
-        logging.info('Preprocessing the corpus...')
+        logger.info('Preprocessing the corpus...')
         with Pool(self.num_workers) as p:
             docs = p.map(preprocess_doc, docs)
+        logger.info('Done')
         
-        logging.info('Sorting the corpus...')
+        logger.info('Sorting the corpus...')
         for _ in tqdm(range(len(docs))):
             docid, tokens = docs.pop()
             # Add all tokens and corresponding docid and position to a list
             for pos, token in enumerate(tokens):
+                self.__vocab.add(token)
                 heapq.heappush(term_pos, (docid, pos, token))
         del docs
-        logging.info(f'{len(term_pos)} tokens in total')
+        logger.info('Done')
+        logger.info(f'{len(term_pos)} tokens in total')
+        global vocab
+        vocab = self.__vocab
+        logger.info(f'Vocabulary size: {len(vocab)}')
 
         # Build the docid lists and position lists for each token with order
         # Create the token represents the unknown token
@@ -204,15 +211,12 @@ class Index(object):
         for _ in tqdm(range(len(term_pos))):
             (docid, pos, token) = heapq.heappop(term_pos)
             if token not in self.__index:
-                self.__vocab.add(token)
                 self.__index[token] = OrderedDict()
             if docid not in self.__index[token]:
                 self.__index[token][docid] = deque()
             self.__index[token][docid].append(pos)
             
-        global vocab
-        vocab = self.__vocab
-        logging.info(f'Vocabulary size: {len(vocab)}')
+
         
         # transfer the index into a cached index
         index_path = os.path.join(self.save_path, 'index')
@@ -506,6 +510,7 @@ def ranked_search(query: str, index: Index) -> list[tuple[int, float]]:
     tokens = preprocess(query)
     docids = index.search_tokens(tokens, mode='OR')
     result = []
+    # TODO: Miltiprocessing this search
     for docid in docids:
         weight = 0.0
         for token in tokens:
@@ -518,7 +523,6 @@ def ranked_search(query: str, index: Index) -> list[tuple[int, float]]:
     return result
 
 
-index = None
 class IndexTest(BaseHTTPRequestHandler):
 
     def do_POST(self):
@@ -545,7 +549,7 @@ class IndexTest(BaseHTTPRequestHandler):
                 bookid_list_ranked_long = []
         except Exception as e:
             error_message = str(e)
-            logging.error(error_message)
+            logger.error(error_message)
             bookid_list_ranked_long = []
 
         toc = time.time()
@@ -557,7 +561,7 @@ class IndexTest(BaseHTTPRequestHandler):
 
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')
         self.wfile.write(jstring)
-        logging.info('Elapsed: %s' % toc - tic)
+        logger.info('Elapsed: %s' % toc - tic)
 
     
 if __name__ == "__main__":
@@ -567,37 +571,37 @@ if __name__ == "__main__":
 
     # If the build index command is specified
     if args.build:
-        logging.info('building the index')
+        logger.info('Build the index')
         # Read the stopwords if which is specified
         if args.stoppath is not None:
             with open(args.stoppath, 'r') as f:
                 stopwords = set(f.read().split())
         
         # Build and save the index
-        logging.info('Begin to build the index...')
+        logger.info('Begin to build the index...')
         index = Index(args.datapath, args.indexpath, args.num_workers)
-        logging.info('The index is built successfully.')
+        logger.info('The index is built successfully.')
         index.save_index()
-        logging.info(f'The index is saved to {args.indexpath}.')
+        logger.info(f'The index is saved to {args.indexpath}.')
 
     # If the search command is specified
     elif args.serve:
         # load the index
         if index is None:
-            logging.info('Initializing index...')
+            logger.info('Initializing index...')
             index = Index(args.indexpath)
-            logging.info('Index initialized.')
+            logger.info('Index initialized.')
             
-        logging.info('Start the server')
+        logger.info('Start the server')
         httpd = HTTPServer(('localhost', 30002), IndexTest)
         httpd.serve_forever()
 
     # Test the functions
     elif args.test:
         if index is None:
-            logging.info('Initializing index...')
+            logger.info('Initializing index...')
             index = Index(args.indexpath)
-            logging.info('Index initialized.')
+            logger.info('Index initialized.')
         r1 = boolean_search('(car OR vehicle) AND (motor OR engine) AND NOT (cooler)', index)
         car = set(index.search_tokens(preprocess('car')))
         veh = set(index.search_tokens(preprocess('vehicle')))
