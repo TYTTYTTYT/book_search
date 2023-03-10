@@ -41,7 +41,7 @@ from tqdm import tqdm
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from cache_dict.cache_dict import CacheDict
-from transformers import GPT2Tokenizer
+# from transformers import GPT2Tokenizer
 
 # Tokenizer pattern
 TOKENIZE_PATTERN = r"(?:[a-zA-Z]+)|(?:[a-zA-Z]+'[a-zA-Z]+)|(?:[0-9]+(?:[./,][0-9]+)*)"
@@ -61,8 +61,8 @@ RSB_PATTERN = '([0-9]+) (.*)'
 
 logging.basicConfig(filename='index_server.log', encoding='utf-8', level=logging.INFO)
 
-encoder = GPT2Tokenizer.from_pretrained('gpt2')
-encoder.max_model_input_sizes['gpt2'] = 1000000
+# encoder = GPT2Tokenizer.from_pretrained('gpt2')
+# encoder.max_model_input_sizes['gpt2'] = 1000000
 parser = argparse.ArgumentParser(description="Build index or search")
 
 # Build index arguments
@@ -119,8 +119,8 @@ def preprocess(sent: str, index: Optional[Any]=None) -> list[int]:
     tokens = stopping(tokens)
     tokens = stem(tokens)
     tokens = ' '.join(tokens)
-    tokens = encoder.encode(tokens)
-    return tokens[:100]
+    # tokens = encoder.encode(tokens)
+    return tokens
 
 def preprocess_doc(doc: str) -> tuple[int, list[str]]:
     doc = json.loads(doc)
