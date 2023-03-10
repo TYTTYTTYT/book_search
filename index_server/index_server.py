@@ -282,7 +282,7 @@ class Index(object):
     def tfidf_weight(self, token: str, docid: int) -> float:
         # calculate the TFIDF of a token to a document
         index = self.__index[token]
-        if docid not in index[1]:
+        if docid not in index:
             return 0.0
         df = len(index)
         tf = len(index[docid])
@@ -421,7 +421,7 @@ def parse_queryt(tokens: list[str], index: Index, pre_term: list[int] | str | li
         return result, tokens
 
     # parse the operator and the term
-    op, remain = parse_op(tokens, index)
+    op, remain = parse_op(tokens)
     term, remain = parse_term(remain, index)
 
     if op == 'AND' and isinstance(term, str) and (isinstance(pre_term, str) or (isinstance(pre_term, list) and len(pre_term) > 0 and isinstance(pre_term[0], str))):
