@@ -41,8 +41,11 @@ class CacheDict(object):
         self.id2node = dict()
         self.capacity = capacity
         if data:
-            for k, v in data.items():
+            keys = list(data.keys())
+            for k in keys:
+                v = data.pop(k)
                 self.__setitem__(k, v)
+            del data
     
     def __setitem__(self, id: Any, value: Any) -> None:
         if id in self.id2node:

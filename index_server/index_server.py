@@ -30,7 +30,7 @@ import xml.etree.ElementTree as ET
 from math import log
 import logging
 import time
-from collections import deque
+from collections import deque, OrderedDict
 import heapq
 import json
 from pathlib import Path
@@ -113,7 +113,7 @@ def stem(tokens: list[str]) -> list[str]:
         tokens = list(map(lambda x: x if x in vocab else UNKNOWN, tokens))
     return tokens
 
-def preprocess(sent: str, index: Optional[Any]=None) -> list[int]:
+def preprocess(sent: str) -> list[int]:
     # Combine the tokenization, stopping and stem.
     tokens = tokenize(sent)
     tokens = stopping(tokens)
@@ -146,8 +146,8 @@ class Index(object):
         self.__vocab = set()
         self.save_path = save_path
         self.num_workers = num_workers
-        self.__index = None
         self.cache_size = cache_size
+        self.path = path
 
         if os.path.isdir(path):
             self.load_index()
@@ -200,20 +200,19 @@ class Index(object):
         # Build the docid lists and position lists for each token with order
         # Create the token represents the unknown token
         self.__index = dict()
-        self.__index[UNKNOWN] = (deque(), dict())
+        self.__index[UNKNOWN] = OrderedDict()
         for _ in tqdm(range(len(term_pos))):
             (docid, pos, token) = heapq.heappop(term_pos)
             if token not in self.__index:
                 self.__vocab.add(token)
-                self.__index[token] = (deque(), dict())
-            if len(self.__index[token][0]) == 0 or self.__index[token][0][-1] != docid:
-                self.__index[token][0].append(docid)
-            if docid not in self.__index[token][1]:
-                self.__index[token][1][docid] = deque()
-            self.__index[token][1][docid].append([pos])
+                self.__index[token] = OrderedDict()
+            if docid not in self.__index[token]:
+                self.__index[token][docid] = deque()
+            self.__index[token][docid].append(pos)
             
         global vocab
         vocab = self.__vocab
+        logging.info(f'Vocabulary size: {len(vocab)}')
         
         # transfer the index into a cached index
         index_path = os.path.join(self.save_path, 'index')
@@ -223,18 +222,18 @@ class Index(object):
         # find a token's docid list
         if token not in self.__index:
             return []
-        return self.__index[token][0]
+        return list(self.__index[token].keys())
 
     def get_pos(self, token: str, docid: int) -> list[int]:
         # find a token's position list w.r.t. a docid
-        return self.__index[token][1][docid]
+        return self.__index[token][docid]
 
     def __str__(self) -> str:
         # format the index into a string line by line
         output = ''
         for token, index in self.__index.items():
             output += token + ':' + str(len(index[0])) + '\n'
-            for docid, pos in index[1].items():
+            for docid, pos in index.items():
                 pos = map(str, pos)
                 output += '\t' + str(docid) + ': ' + ', '.join(pos) + '\n'
         
@@ -281,8 +280,8 @@ class Index(object):
         index = self.__index[token]
         if docid not in index[1]:
             return 0.0
-        df = len(index[0])
-        tf = len(index[1][docid])
+        df = len(index)
+        tf = len(index[docid])
         weight = (1 + log(tf, 10)) * log(self.num_docs / df, 10)
         return weight
 
@@ -595,6 +594,10 @@ if __name__ == "__main__":
 
     # Test the functions
     elif args.test:
+        if index is None:
+            logging.info('Initializing index...')
+            index = Index(args.indexpath)
+            logging.info('Index initialized.')
         r1 = boolean_search('(car OR vehicle) AND (motor OR engine) AND NOT (cooler)', index)
         car = set(index.search_tokens(preprocess('car')))
         veh = set(index.search_tokens(preprocess('vehicle')))
