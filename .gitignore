@@ -1,6 +1,7 @@
 # Igmore the data directory
 data/*
 */data/*
+.metals/*
 
 # macOS system files
 .DS_Store

@@ -20,7 +20,6 @@ import ed.inf.ttds.booksearch.messageserver.messageserver.lrucache.LruCache;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientColbert;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientDatabase;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientIndex;
-import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ColbertResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.DatabaseResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ColbertResultK;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.IndexResult;
