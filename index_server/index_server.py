@@ -61,7 +61,7 @@ RSB_PATTERN = '([0-9]+) (.*)'
 
 FORMAT = '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
 logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('Index')
 
 # encoder = GPT2Tokenizer.from_pretrained('gpt2')
 # encoder.max_model_input_sizes['gpt2'] = 1000000
@@ -83,6 +83,8 @@ parser.add_argument('--rankedout', type=str, help='Save result of ranked path')
 
 # Serve arguments
 parser.add_argument('--serve', action='store_true', help='Init the server')
+parser.add_argument('--port', type=int, help='listening port', default=30002)
+
 # parser.add_argument('--max', type=int, help='Maximum number of results')
 
 # Test the functions
@@ -230,6 +232,8 @@ class Index(object):
 
     def get_pos(self, token: str, docid: int) -> list[int]:
         # find a token's position list w.r.t. a docid
+        if token not in self.__index:
+            return []
         return self.__index[token][docid]
 
     def __str__(self) -> str:
@@ -535,33 +539,37 @@ class IndexTest(BaseHTTPRequestHandler):
 
         body = self.rfile.read(content_length).decode('utf8')
         data = json.loads(body)
-
+        error_message = ''
         try:
             query = data['query']
             query_type = data['query_type']
+            logger.info(f'Handling query_type: {query_type} | query: {query}')
             if query_type == 'boolean':
                 bookid_list_ranked_long = boolean_search(query, index)
-            elif query_type == 'phrase':
+            elif query_type == 'tfidf':
                 bookid_list_ranked_long = ranked_search(query, index)
             elif query_type == 'proximity':
                 bookid_list_ranked_long = proximity_search(query, index)
+            elif query_type == 'bm25':
+                raise NotImplementedError('bm25 has not been implemented!')
             else:
-                bookid_list_ranked_long = []
-        except Exception as e:
-            error_message = str(e)
-            logger.error(error_message)
+                raise TypeError(f'Unknown query type <{query_type}>')
+        except (SyntaxError, NotImplementedError, TypeError, Exception) as e:
+            error_message = repr(e)
+            logger.warning(error_message)
             bookid_list_ranked_long = []
 
-        toc = time.time()
+        time_consume = time.time() - tic
+        
         response = {
             'bookid_list_ranked_long': bookid_list_ranked_long, 
             'error_message': error_message, 
-            'search_time': toc - tic
+            'search_time': time_consume
             }
 
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')
         self.wfile.write(jstring)
-        logger.info('Elapsed: %s' % toc - tic)
+        logger.info(f'Find {len(bookid_list_ranked_long)} results in {time_consume} seconds.')
 
     
 if __name__ == "__main__":
@@ -592,8 +600,8 @@ if __name__ == "__main__":
             index = Index(args.indexpath)
             logger.info('Index initialized.')
             
-        logger.info('Start the server')
-        httpd = HTTPServer(('localhost', 30002), IndexTest)
+        logger.info(f'Start the server on port {args.port}')
+        httpd = HTTPServer(('0.0.0.0', args.port), IndexTest)
         httpd.serve_forever()
 
     # Test the functions

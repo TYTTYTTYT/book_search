@@ -7,7 +7,7 @@ import logging
 
 FORMAT = '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
 logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('CacheDict')
 
 DATAPATH = os.path.join(Path.home(), '.cache', 'cache_dict')
 
