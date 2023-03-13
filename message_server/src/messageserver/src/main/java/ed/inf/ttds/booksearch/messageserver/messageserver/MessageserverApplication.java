@@ -130,7 +130,8 @@ public class MessageserverApplication {
         @RequestParam String query_type,
         @RequestParam String query,
         @RequestParam Long result_range_from,
-        @RequestParam Long result_range_to
+        @RequestParam Long result_range_to,
+        @RequestParam Double score
         ) {
         // session id is defined by uid, query_type, and query
         String sid = query_type + query;
