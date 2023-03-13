@@ -34,6 +34,7 @@ from collections import deque, OrderedDict
 import heapq
 import json
 from pathlib import Path
+import math
 from multiprocessing import Pool
 
 from nltk.stem.porter import PorterStemmer
@@ -151,6 +152,8 @@ class Index(object):
         self.num_workers = num_workers
         self.cache_size = cache_size
         self.path = path
+        self.doc_len = dict()
+        self.avglen = 0
 
         if os.path.isdir(path):
             self.load_index()
@@ -165,7 +168,7 @@ class Index(object):
         meta_path = os.path.join(self.save_path, 'meta.bin')
         with open(meta_path, 'wb') as fout:
             global stopwords
-            pickle.dump((self.num_docs, stopwords, vocab), fout)
+            pickle.dump((self.num_docs, stopwords, vocab, self.doc_len, self.avglen), fout)
         self.__index.save()
 
     def load_index(self) -> None:
@@ -174,7 +177,7 @@ class Index(object):
         with open(meta_path, 'rb') as fin:
             global stopwords
             global vocab
-            self.num_docs, stopwords, vocab = pickle.load(fin)
+            self.num_docs, stopwords, vocab, self.doc_len, self.avglen = pickle.load(fin)
         index_path = os.path.join(self.path, 'index')
         self.__index = CacheDict(self.cache_size, index_path)
         self.__index.load()
@@ -195,10 +198,13 @@ class Index(object):
         logger.info('Sorting the corpus...')
         for _ in tqdm(range(len(docs))):
             docid, tokens = docs.pop()
+            self.doc_len[docid] = len(tokens)
+            self.avglen += len(tokens)
             # Add all tokens and corresponding docid and position to a list
             for pos, token in enumerate(tokens):
                 self.__vocab.add(token)
                 heapq.heappush(term_pos, (docid, pos, token))
+        self.avglen = self.avglen / self.num_docs
         del docs
         logger.info('Done')
         logger.info(f'{len(term_pos)} tokens in total')
@@ -292,6 +298,14 @@ class Index(object):
         tf = len(index[docid])
         weight = (1 + log(tf, 10)) * log(self.num_docs / df, 10)
         return weight
+    
+    def bm25_weight(self, token: str, docid: Any) -> float:
+        f = len(self.__index[token][docid])
+        D = self.doc_len[docid]
+        right = f * 2.5 / (f + 1.5 * (1 - 0.75 + 0.75 * D / self.avglen))
+        n = len(self.__index[token])
+        idf = math.log((self.num_docs - n + 0.5) / (n + 0.5) + 1)
+        return idf * right
 
 def linear_merge(*lists: list[int], dist: int=0, mode: str='AND') -> list[int]:
     """Merge arbitrary number of integer lists in linear time
@@ -526,6 +540,21 @@ def ranked_search(query: str, index: Index) -> list[tuple[int, float]]:
 
     return result
 
+def bm25_search(query: str, index: Index) -> list[tuple[Any, float]]:
+    tokens = preprocess(query)
+    docids = index.search_tokens(tokens, mode='OR')
+    result = []
+    # TODO: Miltiprocessing this search
+    for docid in docids:
+        weight = 0.0
+        for token in tokens:
+            # Use TFIDF weight
+            weight += index.bm25_weight(token, docid)
+        result += [(docid, weight)]
+    # Sort the result using the scores
+    result.sort(key=lambda x: x[1], reverse=True)
+
+    return result
 
 class IndexTest(BaseHTTPRequestHandler):
 

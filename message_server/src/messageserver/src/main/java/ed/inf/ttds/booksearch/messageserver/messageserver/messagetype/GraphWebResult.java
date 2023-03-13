@@ -4,6 +4,6 @@ import java.util.Map;
 
 public class GraphWebResult {
     public List<Map<String, String>> nodes;
-    public List<Map<String, Long>> links;
+    public List<Map<String, String>> links;
     public String error_message;
 }

@@ -4,6 +4,6 @@ import java.util.Map;
 
 public class GraphResult {
     public List<Long> nodes;
-    public List<Map<String, Long>> links;
+    public List<Map<String, String>> links;
     public String error_message;
 }
