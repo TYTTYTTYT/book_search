@@ -18,7 +18,7 @@ public class ClientGpt {
     private RestTemplate restTemplate = new RestTemplate();
 
     public GptResult search(String query) {
-        String url = "http://localhost:30004/colbert";
+        String url = "http://localhost:30005/gpt";
         HashMap<String, String> body = new HashMap<>();
         body.put("query", query);
 

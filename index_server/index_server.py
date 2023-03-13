@@ -548,6 +548,7 @@ class IndexTest(BaseHTTPRequestHandler):
                 bookid_list_ranked_long = boolean_search(query, index)
             elif query_type == 'tfidf':
                 bookid_list_ranked_long = ranked_search(query, index)
+                bookid_list_ranked_long = [item[0] for item in bookid_list_ranked_long]
             elif query_type == 'proximity':
                 bookid_list_ranked_long = proximity_search(query, index)
             elif query_type == 'bm25':

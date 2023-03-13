@@ -126,7 +126,7 @@ public class MessageserverApplication {
 
     @GetMapping("/search")
     public WebResult search(
-        @RequestParam Long uid, 
+        @RequestParam String uid, 
         @RequestParam String query_type,
         @RequestParam String query,
         @RequestParam Long result_range_from,

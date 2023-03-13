@@ -28,19 +28,19 @@ class GptServer(BaseHTTPRequestHandler):
         body = self.rfile.read(content_length).decode('utf8')
         data = json.loads(body)
         error_message = ''
-
+        suggestions = []
         try:
             query = data['query']
             logger.info(f"Received query: {query}")
             
-            suggestions = gpt.pre(query)
+            suggestions = gpt.predict(query)
 
         except Exception as e:
             error_message = repr(e)
         
         time_consume = time.time() - tic
         response = {
-            'suggestions': suggestions, 
+            'suggest': suggestions, 
             'error_message': error_message,
             'response_time': time.time() - tic
             }
@@ -50,3 +50,7 @@ class GptServer(BaseHTTPRequestHandler):
         logger.info(f'GPT suggestions {suggestions}, {time_consume}')
 
 
+if __name__ == "__main__":
+    print('Server start.')
+    httpd = HTTPServer(('localhost', 30005), GptServer)
+    httpd.serve_forever()

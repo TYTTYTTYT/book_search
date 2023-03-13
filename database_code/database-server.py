@@ -33,8 +33,7 @@ class DatabaseTest(BaseHTTPRequestHandler):
                 
                 myquery = {'book_id':str(bookid)}
                 data = mycol.find_one(myquery)
-                # del data['book_id_1']
-                # del data['_id_']
+                print(data)
                 response["bookid_result_list"][int(bookid)] = data
 
                 # <<< @Claudia Zhou <<<
