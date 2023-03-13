@@ -8,6 +8,7 @@ import time
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["TTDS"]
 mycol = mydb["Bookreview"]
+review_col = mydb['Review']
 
 class DatabaseTest(BaseHTTPRequestHandler):
 
@@ -20,19 +21,23 @@ class DatabaseTest(BaseHTTPRequestHandler):
 
         body = self.rfile.read(content_length).decode('utf8')
         data = json.loads(body)
+        
+        if 'uid' in data:
+            review_col.insert_one(data)
+            response = data
+        else:
+            response = {"bookid_result_list": dict()}
+            for bookid in data['bookid_list']:
+                # TODO:
+                # >>> Your codes goes here, replace the fake data with real data >>>
+                
+                myquery = {'book_id':str(bookid)}
+                data = mycol.find_one(myquery)
+                # del data['book_id_1']
+                # del data['_id_']
+                response["bookid_result_list"][int(bookid)] = data
 
-        response = {"bookid_result_list": dict()}
-        for bookid in data['bookid_list']:
-            # TODO:
-            # >>> Your codes goes here, replace the fake data with real data >>>
-            
-            myquery = {'book_id':str(bookid)}
-            data = mycol.find_one(myquery)
-            # del data['book_id_1']
-            # del data['_id_']
-            response["bookid_result_list"][int(bookid)] = data
-
-            # <<< @Claudia Zhou <<<
+                # <<< @Claudia Zhou <<<
 
         jstring = dumps(response).encode('utf8')
         self.wfile.write(jstring)

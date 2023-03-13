@@ -37,7 +37,7 @@ public class ClientDatabase {
     }
 
     public ReviewPost insertReview(ReviewPost review) {
-        String url = "http://localhost:30001/database";
+        String url = "http://localhost:30001/review";
 
         HttpEntity<ReviewPost> entity = new HttpEntity<>(review);
 

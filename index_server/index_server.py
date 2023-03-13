@@ -564,7 +564,7 @@ class IndexTest(BaseHTTPRequestHandler):
         response = {
             'bookid_list_ranked_long': bookid_list_ranked_long, 
             'error_message': error_message, 
-            'search_time': time_consume
+            'time': time_consume
             }
 
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')

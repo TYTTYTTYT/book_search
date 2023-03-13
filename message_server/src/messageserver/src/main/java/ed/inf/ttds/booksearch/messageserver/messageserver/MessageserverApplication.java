@@ -19,13 +19,19 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import ed.inf.ttds.booksearch.messageserver.messageserver.lrucache.LruCache;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientColbert;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientDatabase;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientGpt;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientIndex;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.Graph;
+
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.DatabaseResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ColbertResultK;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.IndexResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebQuery;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ReviewPost;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.GraphResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.GraphWebResult;
+import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.GptResult;
 
 
 @CrossOrigin
@@ -37,6 +43,8 @@ public class MessageserverApplication {
     private ClientDatabase dbClient;
     private ClientIndex idxClient;
     private ClientColbert bertClient;
+    private Graph graphClient;
+    private ClientGpt gptClient;
 
     public static void main(String[] args) {
       	SpringApplication.run(MessageserverApplication.class, args);
@@ -46,6 +54,8 @@ public class MessageserverApplication {
         dbClient = new ClientDatabase();
         idxClient = new ClientIndex();
         bertClient = new ClientColbert();
+        graphClient = new Graph();
+        gptClient = new ClientGpt();
     }
 
     @GetMapping("/searchbybody")
@@ -125,27 +135,25 @@ public class MessageserverApplication {
         // session id is defined by uid, query_type, and query
         String sid = query_type + query;
         System.out.println(sid);
+        String error_message = "";
+        Double time = 0.0;
 
         // Check whether the search result is cached
         List<Long> bookids = cache.get(sid);
         if (bookids == null) {
             System.out.println("Cache miss");
-            // invoke the index search service
 
-            // if free search, rerank using colBERT service
-            // if (query.query_type == "free") {
-            //     List<Long> bookid_list_ranked_short = indexResult.bookid_list_ranked_long.subList(0, short_len);
-            //     ColbertResult bertResult = bertClient.rank(bookid_list_ranked_short);
-            //     Collections.copy(bertResult.bookid_list_reranked_short, indexResult.bookid_list_ranked_long);
-            // }
-            if (query_type.equals("phrase")) {
-
+            if (query_type.equals("colBERT")) {
                 Long k = 10000l;
                 ColbertResultK bertResult = bertClient.search(query, k);
                 bookids = bertResult.rank_info_books;
+                error_message = bertResult.error_message;
+                time = bertResult.time;
             } else {
                 IndexResult indexResult = idxClient.search(query_type, query);
                 bookids = indexResult.bookid_list_ranked_long;
+                error_message = indexResult.error_message;
+                time = indexResult.time;
             }
             cache.insert(sid, bookids);
         } else {
@@ -163,6 +171,7 @@ public class MessageserverApplication {
         } else {
             WebResult response = new WebResult(0l);
             response.result_num = result_num;
+            response.error_message = error_message;
             return response;
         }
 
@@ -170,6 +179,9 @@ public class MessageserverApplication {
         int response_num = (int)(result_range_to - result_range_from + 1l);
         WebResult response = new WebResult(result_range_to - result_range_from + 1l);
         response.result_num = result_num;
+        response.error_message = error_message;
+        response.time = time;
+
         
         // get bookids with corresponding indexes
         List<Long> bookid_list = new ArrayList<>(response_num);
@@ -200,8 +212,35 @@ public class MessageserverApplication {
     }
         
     @PostMapping("/review")
-    public ReviewPost review(@RequestBody ReviewPost review) {
-        ReviewPost dbresponse = dbClient.insertReview(review);
-        return dbresponse;
+    public void review(@RequestBody ReviewPost review) {
+        dbClient.insertReview(review);
     }
+
+    @GetMapping("/Graph")
+    public GraphWebResult graph(@RequestParam Long bookid, @RequestParam Long neighbor) {
+        GraphResult result = graphClient.search(bookid, neighbor);
+        GraphWebResult web_result = new GraphWebResult();
+        web_result.links = result.links;
+        web_result.error_message = result.error_message;
+        DatabaseResult mapping = dbClient.getDocs(result.nodes);
+
+        ArrayList<Map<String, String>> nodes = new ArrayList<Map<String, String>>();
+
+        for (int idx = 0; idx < result.nodes.size(); idx++) {
+            HashMap<String, String> node = new HashMap<String, String>();
+            node.put("id", result.nodes.get(idx).toString());
+            String title = String.valueOf(mapping.bookid_result_list.get(result.nodes.get(idx)).get("title"));
+            node.put("title", title);
+            nodes.add(node);
+        }
+        web_result.nodes = nodes;
+        return web_result;
+    }
+
+    @GetMapping("/gpt")
+    public GptResult gpt(@RequestParam String query) {
+        GptResult result = gptClient.search(query);
+        return result;
+    }
+
 }
