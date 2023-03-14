@@ -21,29 +21,30 @@ class DatabaseTest(BaseHTTPRequestHandler):
 
         body = self.rfile.read(content_length).decode('utf8')
         data = json.loads(body)
+        missing = 0
         
         if 'uid' in data:
             review_col.insert_one(data)
             response = data
         else:
             response = {"bookid_result_list": dict()}
-            for bookid in data['bookid_list']:
-                # TODO:
-                # >>> Your codes goes here, replace the fake data with real data >>>
+            bookids = list(map(lambda x: str(x), data['bookid_list']))
+            not_found = set(bookids)
                 
-                myquery = {'book_id':str(bookid)}
-                data = mycol.find_one(myquery)
-                print(data)
-                response["bookid_result_list"][int(bookid)] = data
-
-                # <<< @Claudia Zhou <<<
+            myquery = {'book_id': {'$in': bookids}}
+            for result in mycol.find(myquery):
+                response["bookid_result_list"][int(result['book_id'])] = result
+                not_found.remove(str(result['book_id']))
+            for miss_id in list(not_found):
+                missing += 1
+                response["bookid_result_list"][int(miss_id)] = None
 
         jstring = dumps(response).encode('utf8')
         self.wfile.write(jstring)
         print('Elapsed: %s' % (time.time() - tic))
-
+        print(f'{missing} books not found')
 
 if __name__ == "__main__":
     print('Server start.')
-    httpd = HTTPServer(('localhost', 30001), DatabaseTest)
+    httpd = HTTPServer(('0.0.0.0', 30001), DatabaseTest)
     httpd.serve_forever()

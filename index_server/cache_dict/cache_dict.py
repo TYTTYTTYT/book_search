@@ -110,6 +110,9 @@ class CacheDict(object):
     def __contains__(self, id: Any) -> bool:
         return id in self.id2node
     
+    def keys(self) -> Any:
+        return self.id2node.keys()
+    
     def save(self) -> None:
         logger.info(f'Saving the cache with {self.count} keys in memory...')
         in_cache_ids = deque()
