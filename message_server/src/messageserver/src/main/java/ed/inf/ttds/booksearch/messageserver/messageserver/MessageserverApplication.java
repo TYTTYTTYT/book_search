@@ -30,7 +30,6 @@ import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebQuery;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.WebResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.ReviewPost;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.GraphResult;
-import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.GraphWebResult;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.GptResult;
 
 
@@ -218,24 +217,10 @@ public class MessageserverApplication {
     }
 
     @GetMapping("/Graph")
-    public GraphWebResult graph(@RequestParam Long bookid, @RequestParam Long neighbor) {
+    public GraphResult graph(@RequestParam Long bookid, @RequestParam Long neighbor) {
         GraphResult result = graphClient.search(bookid, neighbor);
-        GraphWebResult web_result = new GraphWebResult();
-        web_result.links = result.links;
-        web_result.error_message = result.error_message;
-        DatabaseResult mapping = dbClient.getDocs(result.nodes);
 
-        ArrayList<Map<String, String>> nodes = new ArrayList<Map<String, String>>();
-
-        for (int idx = 0; idx < result.nodes.size(); idx++) {
-            HashMap<String, String> node = new HashMap<String, String>();
-            node.put("id", result.nodes.get(idx).toString());
-            String title = String.valueOf(mapping.bookid_result_list.get(result.nodes.get(idx)).get("title"));
-            node.put("title", title);
-            nodes.add(node);
-        }
-        web_result.nodes = nodes;
-        return web_result;
+        return result;
     }
 
     @GetMapping("/gpt")

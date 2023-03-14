@@ -52,3 +52,9 @@ class Graph(object):
     
     def __getitem__(self, id: Any) -> Any:
         return self.__id2nodes[id]
+    
+    def __setitem__(self, id: Any, value: Any) -> None:
+        if id in self.__id2nodes:
+            self.__id2nodes[id] = (value, self.__id2nodes[id][1])
+        else:
+            self.__id2nodes[id] = (value, [])

@@ -1,5 +1,6 @@
 # Igmore the data directory
 data/*
+data2/*
 */data/*
 .metals/*
 .metals

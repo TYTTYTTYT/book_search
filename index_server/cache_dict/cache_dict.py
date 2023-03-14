@@ -59,10 +59,13 @@ class CacheDict(object):
     
     def __setitem__(self, id: Any, value: Any) -> None:
         if id in self.id2node:
-            raise KeyError(f'Node<{id}> already added!')
-        new_node = Node(id, value, self.node_path)
-        self.id2node[id] = new_node
-        self.__insert_node(new_node)
+            node = self.__get_node(id)
+            assert node.in_memory
+            node.value = value
+        else:
+            node = Node(id, value, self.node_path)
+            self.id2node[id] = node
+        self.__insert_node(node)
             
     def __insert_node(self, node: Node) -> None:
         pre_first = self.head.next
