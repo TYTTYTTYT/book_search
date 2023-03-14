@@ -37,7 +37,7 @@ class Graph(object):
         
         for _ in range(layers):
             new_current_nodes = set()
-            for node in current_nodes:
+            for node in current_nodes[:max_neighbor]:
                 for nei in self.__id2nodes[node][1][:max_neighbor]:
                     new_current_nodes.add(nei)
                     nei_title = self.__id2nodes[nei][0]
