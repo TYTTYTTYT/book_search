@@ -127,6 +127,10 @@ class CacheDict(object):
     def keys(self) -> Any:
         return self.id2node.keys()
     
+    def __save_meta(self, in_cache_ids: list[Any]) -> None:
+        with open(os.path.join(self.cache_path, 'meta.db'), 'wb') as fout:
+            pickle.dump((self.id2node, in_cache_ids, self.capacity), fout)
+    
     def save(self) -> None:
         logger.info(f'Saving the cache with {self.count} keys in memory...')
         in_cache_ids = deque()
@@ -137,8 +141,7 @@ class CacheDict(object):
         while self.count > 0:
             self.__pop()
 
-        with open(os.path.join(self.cache_path, 'meta.db'), 'wb') as fout:
-            pickle.dump((self.id2node, in_cache_ids, self.capacity), fout)
+        self.__save_meta(in_cache_ids)
         logger.info('Done.')
     
     def load(self) -> None:
@@ -149,6 +152,7 @@ class CacheDict(object):
             origin_path = str(Path(node.path).parent.parent.absolute())
             if str(Path(self.node_path).absolute()) != origin_path:
                 self.__update_cache_path()
+                self.__save_meta(in_cache_ids)
             break
         in_cache_ids.reverse()
         for id in in_cache_ids:
@@ -192,6 +196,6 @@ if __name__ == '__main__':
         assert cd[k] == k + 50000
         
     logger.warning('test change directory')
-    cd = CacheDict(100, 'data/test2')
+    cd = CacheDict(100, 'data/test3')
     cd.load()
     

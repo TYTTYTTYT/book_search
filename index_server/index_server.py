@@ -301,7 +301,10 @@ class Index(object):
         return weight
     
     def bm25_weight(self, token: str, docid: Any) -> float:
-        f = len(self.__index[token][docid])
+        index = self.__index[token]
+        if docid not in index:
+            return 0.0
+        f = len(index)
         D = self.doc_len[docid]
         right = f * 2.5 / (f + 1.5 * (1 - 0.75 + 0.75 * D / self.avglen))
         n = len(self.__index[token])
@@ -549,7 +552,7 @@ def bm25_search(query: str, index: Index) -> list[tuple[Any, float]]:
     for docid in docids:
         weight = 0.0
         for token in tokens:
-            # Use TFIDF weight
+            # Use bm25 weight
             weight += index.bm25_weight(token, docid)
         result += [(docid, weight)]
     # Sort the result using the scores
@@ -582,7 +585,8 @@ class IndexTest(BaseHTTPRequestHandler):
             elif query_type == 'proximity':
                 bookid_list_ranked_long = proximity_search(query, index)
             elif query_type == 'bm25':
-                raise NotImplementedError('bm25 has not been implemented!')
+                bookid_list_ranked_long = bm25_search(query, index)
+                bookid_list_ranked_long = [item[0] for item in bookid_list_ranked_long]           
             else:
                 raise TypeError(f'Unknown query type <{query_type}>')
         except (SyntaxError, NotImplementedError, TypeError, Exception) as e:
