@@ -215,7 +215,9 @@ class Index(object):
 
         # Build the docid lists and position lists for each token with order
         # Create the token represents the unknown token
-        self.__index = dict()
+        # transfer the index into a cached index
+        index_path = os.path.join(self.save_path, 'index')
+        self.__index = CacheDict(self.cache_size, index_path)
         self.__index[UNKNOWN] = OrderedDict()
         for _ in tqdm(range(len(term_pos))):
             (docid, pos, token) = heapq.heappop(term_pos)
@@ -225,11 +227,6 @@ class Index(object):
                 self.__index[token][docid] = deque()
             self.__index[token][docid].append(pos)
             
-
-        
-        # transfer the index into a cached index
-        index_path = os.path.join(self.save_path, 'index')
-        self.__index = CacheDict(self.cache_size, index_path, self.__index)
 
     def get_docid(self, token: str) -> list[int]:
         # find a token's docid list
