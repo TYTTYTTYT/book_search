@@ -4,6 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.Math;
 
 import org.springframework.boot.SpringApplication;
@@ -15,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.CrossOrigin;
+
+import org.springframework.beans.factory.annotation.Value;
+
 
 import ed.inf.ttds.booksearch.messageserver.messageserver.lrucache.LruCache;
 import ed.inf.ttds.booksearch.messageserver.messageserver.messageclient.ClientColbert;
@@ -44,6 +51,10 @@ public class MessageserverApplication {
     private ClientColbert bertClient;
     private Graph graphClient;
     private ClientGpt gptClient;
+    private ScoreFilter scoreFilter;
+    @Value("${data.id2score}")
+    private String id2score_path;
+
 
     public static void main(String[] args) {
       	SpringApplication.run(MessageserverApplication.class, args);
@@ -61,6 +72,9 @@ public class MessageserverApplication {
     public WebResult search(@RequestBody WebQuery query) {
         // session id is defined by uid, query_type, and query
         String sid = query.uid.toString() + query.query_type + query.query;
+        if (scoreFilter == null) {
+            scoreFilter = new ScoreFilter(id2score_path);
+        }
 
         // Check whether the search result is cached
         List<Long> bookids = cache.get(sid);
@@ -130,10 +144,13 @@ public class MessageserverApplication {
         @RequestParam String query,
         @RequestParam Long result_range_from,
         @RequestParam Long result_range_to,
-        @RequestParam Double score
+        @RequestParam Float score
         ) {
         // session id is defined by uid, query_type, and query
-        String sid = query_type + query;
+        if (scoreFilter == null) {
+            scoreFilter = new ScoreFilter(id2score_path);
+        }
+        String sid = query_type + query + String.valueOf(score);
         System.out.println(sid);
         String error_message = "";
         Double time = 0.0;
@@ -155,6 +172,7 @@ public class MessageserverApplication {
                 error_message = indexResult.error_message;
                 time = indexResult.time;
             }
+            bookids = scoreFilter.filter(bookids, score);
             cache.insert(sid, bookids);
         } else {
             System.out.println("Cache hit");
@@ -227,6 +245,41 @@ public class MessageserverApplication {
     public GptResult gpt(@RequestParam String query) {
         GptResult result = gptClient.search(query);
         return result;
+    }
+
+}
+
+class ScoreFilter {
+
+    Map<Long, Float> id2score;
+
+    public ScoreFilter(String path) {
+        System.out.println(path);
+        BufferedReader reader;
+        id2score = new HashMap<Long, Float>();
+
+        try {
+            InputStream inStream = getClass().getClassLoader().getResourceAsStream(path);
+            reader = new BufferedReader(new InputStreamReader(inStream));
+            String line = reader.readLine();
+            while (line != null) {
+                String[] segs = line.split(" ");
+                id2score.put(Long.parseLong(segs[0]), Float.parseFloat(segs[1]));
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public List<Long> filter(List<Long> bookids, Float score) {
+        ArrayList<Long> filtered = new ArrayList<>();
+        for (Long id : bookids) {
+            if (id2score.get(id) >= score) {
+                filtered.add(id);
+            }
+        }
+        return filtered;
     }
 
 }
