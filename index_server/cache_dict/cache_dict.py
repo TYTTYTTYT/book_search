@@ -4,6 +4,7 @@ import os
 import pickle
 from collections import deque
 import logging
+from tqdm import tqdm
 
 FORMAT = '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
 logging.basicConfig(encoding='utf-8', level=logging.INFO, format=FORMAT)
@@ -22,6 +23,13 @@ class Node(object):
         folder_name = os.path.join(cache_path, str(file_name % 16384))
         file_name = str(file_name)
         os.makedirs(folder_name, exist_ok=True)
+        self.path = os.path.join(folder_name, file_name)
+        
+    def set_folder(self, cache_path) -> None:
+        file_name = hash(self.id)
+        folder_name = os.path.join(cache_path, str(file_name % 16384))
+        file_name = str(file_name)
+        # os.makedirs(folder_name, exist_ok=True)
         self.path = os.path.join(folder_name, file_name)
         
     def offLoad(self) -> None:
@@ -110,6 +118,12 @@ class CacheDict(object):
     def __contains__(self, id: Any) -> bool:
         return id in self.id2node
     
+    def __update_cache_path(self) -> None:
+        logger.info(f'Updating the cache directory information...')
+        for key in tqdm(self.id2node.keys()):
+            self.id2node[key].set_folder(self.node_path)
+        logger.info('Done.')
+    
     def keys(self) -> Any:
         return self.id2node.keys()
     
@@ -131,6 +145,11 @@ class CacheDict(object):
         logger.info(f'Loading the data from disk...')
         with open(os.path.join(self.cache_path, 'meta.db'), 'rb') as fin:
             self.id2node, in_cache_ids, self.capacity = pickle.load(fin)
+        for _, node in self.id2node.items():
+            origin_path = str(Path(node.path).parent.parent.absolute())
+            if str(Path(self.node_path).absolute()) != origin_path:
+                self.__update_cache_path()
+            break
         in_cache_ids.reverse()
         for id in in_cache_ids:
             self.__getitem__(id)
@@ -171,5 +190,8 @@ if __name__ == '__main__':
         
     for k in tqdm(range(0, 10000)):
         assert cd[k] == k + 50000
-    
+        
+    logger.warning('test change directory')
+    cd = CacheDict(100, 'data/test2')
+    cd.load()
     

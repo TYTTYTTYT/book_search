@@ -132,7 +132,8 @@ def preprocess_doc(doc: str) -> tuple[int, list[str]]:
     title = doc['title']
     description = doc['description']
     author_list = doc['author_list']
-    sent = ' '.join([title, description] + author_list)
+    reviews = doc['comments']
+    sent = ' '.join([title, description] + author_list + reviews)
     tokens = preprocess(sent)
     return docid, tokens
 

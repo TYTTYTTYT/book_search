@@ -60,7 +60,7 @@ class GraphServer(BaseHTTPRequestHandler):
         jstring = json.dumps(response, ensure_ascii=False).encode('utf-8')
         self.wfile.write(jstring)
         if len(error_message) > 0:
-            logger.warn(error_message)
+            logger.warning(error_message)
         logger.info(f'Find {len(nodes)}/{len(links)} nodes/edges in {time_consume} seconds.')
 
 if __name__ == '__main__':
