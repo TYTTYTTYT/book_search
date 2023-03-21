@@ -7,8 +7,14 @@ import time
 
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["TTDS"]
-mycol = mydb["Bookreview"]
+mycol = mydb["book_review"]
 review_col = mydb['Review']
+
+def process_comment(comments: list[str]) -> dict:
+    uid = comments[0]
+    review = comments[1]
+    score = comments[2]
+    return {"user_id": uid, "review_text": review, "score": score}
 
 class DatabaseTest(BaseHTTPRequestHandler):
 
@@ -33,6 +39,7 @@ class DatabaseTest(BaseHTTPRequestHandler):
                 
             myquery = {'book_id': {'$in': bookids}}
             for result in mycol.find(myquery):
+                result['comments'] = list(map(process_comment, result['comments']))
                 response["bookid_result_list"][int(result['book_id'])] = result
                 not_found.remove(str(result['book_id']))
             for miss_id in list(not_found):

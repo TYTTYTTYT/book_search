@@ -34,8 +34,8 @@ class Bookgpt:
         print(response)
         print(type(response))
         
-        message_history.pop(-1)
-        message_history.pop(-1)
+        self.message_history.pop(-1)
+        self.message_history.pop(-1)
         
         return response
 

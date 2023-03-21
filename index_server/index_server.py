@@ -51,7 +51,7 @@ TOKENIZE_PATTERN = r"(?:[a-zA-Z]+)|(?:[a-zA-Z]+'[a-zA-Z]+)|(?:[0-9]+(?:[./,][0-9
 BOOL_QUERY_PATTERN = r"""['")(]|[0-9a-zA-Z]+"""
 
 # Proximity search query pattern
-PROXIMITY_QUERY_PATTERN = r" *\#([0-9]+)\((.+?)\)"
+PROXIMITY_QUERY_PATTERN = r" *\#([0-9]+) *\((.+?)\)"
 
 # Unknown token
 UNKNOWN = "<unknown>"
