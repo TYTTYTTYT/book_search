@@ -15,4 +15,4 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 conda activate ttds
-python graph_server/graph_server.py --port 30004 --index data2/graph_index
+python graph_server/graph_server.py --port 30004 --index /mnt/data/graph_index

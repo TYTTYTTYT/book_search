@@ -14,5 +14,5 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
-conda activate ttds
-python index_server/index_server.py --serve --indexpath /mnt/data/book_index
+conda activate base
+python book_gpt/bookgpt_server.py
