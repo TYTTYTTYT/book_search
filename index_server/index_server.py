@@ -301,10 +301,10 @@ class Index(object):
         index = self.__index[token]
         if docid not in index:
             return 0.0
-        f = len(index)
+        f = len(index[docid])
         D = self.doc_len[docid]
         right = f * 2.5 / (f + 1.5 * (1 - 0.75 + 0.75 * D / self.avglen))
-        n = len(self.__index[token])
+        n = len(index)
         idf = math.log((self.num_docs - n + 0.5) / (n + 0.5) + 1)
         return idf * right
 
