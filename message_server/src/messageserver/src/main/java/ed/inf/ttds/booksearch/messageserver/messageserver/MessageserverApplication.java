@@ -45,7 +45,7 @@ import ed.inf.ttds.booksearch.messageserver.messageserver.messagetype.GptResult;
 @RestController
 public class MessageserverApplication {
 
-    public static LruCache<String, List<Long>> cache = new LruCache<String, List<Long>>(1000);
+    public static LruCache<String, CacheItem> cache = new LruCache<String, CacheItem>(1000);
     private ClientDatabase dbClient;
     private ClientIndex idxClient;
     private ClientColbert bertClient;
@@ -77,7 +77,8 @@ public class MessageserverApplication {
         }
 
         // Check whether the search result is cached
-        List<Long> bookids = cache.get(sid);
+        CacheItem searchResult = cache.get(sid);
+        List<Long> bookids = searchResult.ids;
         if (bookids == null) {
             // invoke the index search service
             IndexResult indexResult = idxClient.search(query.query_type, query.query);
@@ -104,7 +105,7 @@ public class MessageserverApplication {
             }
             bookids = indexResult.bookid_list_ranked_long;
 
-            cache.insert(sid, bookids);
+            cache.insert(sid, null);
         }
         
         // get bookids with corresponding indexes
@@ -154,10 +155,12 @@ public class MessageserverApplication {
         System.out.println(sid);
         String error_message = "";
         Double time = 0.0;
+        List<Long> bookids = null;
 
         // Check whether the search result is cached
-        List<Long> bookids = cache.get(sid);
-        if (bookids == null) {
+        CacheItem searchResult = cache.get(sid);
+
+        if (searchResult == null) {
             System.out.println("Cache miss");
 
             if (query_type.equals("colBERT")) {
@@ -173,10 +176,15 @@ public class MessageserverApplication {
                 time = indexResult.time;
             }
             bookids = scoreFilter.filter(bookids, score);
-            cache.insert(sid, bookids);
+
+            searchResult = new CacheItem(time, bookids);
+            cache.insert(sid, searchResult);
         } else {
             System.out.println("Cache hit");
         }
+        bookids = searchResult.ids;
+        time = searchResult.time;
+
         // Number of query result
         Long result_num = (long) bookids.size();
 
@@ -282,4 +290,14 @@ class ScoreFilter {
         return filtered;
     }
 
+}
+
+class CacheItem {
+    public Double time;
+    public List<Long> ids;
+
+    public CacheItem(Double time, List<Long> ids) {
+        this.time = time;
+        this.ids = ids;
+    }
 }
